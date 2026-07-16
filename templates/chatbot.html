@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClearLegal AI</title>
+
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<header class="chat-header">
+
+    <div>
+        <h2>⚖️ ClearLegal AI</h2>
+        <p>General legal information</p>
+    </div>
+
+    <a href="/">Home</a>
+
+</header>
+
+<main class="chat-page">
+
+    <div id="messages" class="messages">
+
+        <div class="message bot">
+            Hello! How can I help you today?
+        </div>
+
+    </div>
+
+</main>
+
+<footer class="chat-input">
+
+    <input
+        id="message"
+        type="text"
+        placeholder="Ask a legal question..."
+    >
+
+    <button id="send">
+        Send
+    </button>
+
+</footer>
+
+<script>
+
+const messages = document.getElementById("messages");
+const input = document.getElementById("message");
+const send = document.getElementById("send");
+
+function addMessage(text,type){
+
+    const div=document.createElement("div");
+
+    div.className=`message ${type}`;
+
+    div.textContent=text;
+
+    messages.appendChild(div);
+
+    messages.scrollTop=messages.scrollHeight;
+
+}
+
+async function sendMessage(){
+
+    const text=input.value.trim();
+
+    if(!text) return;
+
+    addMessage(text,"user");
+
+    input.value="";
+
+    try{
+
+        const response=await fetch("/api/chat",{
+
+            method:"POST",
+
+            headers:{
+                "Content-Type":"application/json"
+            },
+
+            body:JSON.stringify({
+
+                message:text
+
+            })
+
+        });
+
+        const data=await response.json();
+
+        addMessage(data.reply,"bot");
+
+    }
+
+    catch{
+
+        addMessage("Unable to contact server.","bot");
+
+    }
+
+}
+
+send.onclick=sendMessage;
+
+input.addEventListener("keypress",(e)=>{
+
+    if(e.key==="Enter")
+        sendMessage();
+
+});
+
+</script>
+
+</body>
+</html>
