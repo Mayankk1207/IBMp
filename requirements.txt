@@ -2,7 +2,10 @@ fastapi
 uvicorn
 jinja2
 python-dotenv
-pymongo
-google-generativeai
 python-multipart
 openai
+fastapi
+chromadb
+sentence-transformers
+langchain-text-splitters
+pymupdf

@@ -1,19 +1,24 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>ClearLegal AI</title>
 
     <link rel="stylesheet" href="/static/style.css">
+
 </head>
+
 <body>
 
 <header class="chat-header">
 
     <div>
-        <h2>⚖️ ClearLegal AI</h2>
-        <p>General legal information</p>
+        <h2>ClearLegal AI</h2>
+        <p>General Legal Information Assistant</p>
     </div>
 
     <a href="/">Home</a>
@@ -22,10 +27,26 @@
 
 <main class="chat-page">
 
+    <div class="upload-container">
+
+        <input
+            type="file"
+            id="pdfFile"
+            accept=".pdf"
+        >
+
+        <button id="uploadBtn">
+            Upload PDF
+        </button>
+
+        <p id="uploadStatus"></p>
+
+    </div>
+
     <div id="messages" class="messages">
 
         <div class="message bot">
-            Hello! How can I help you today?
+            Hello! Upload a legal document or ask a legal question.
         </div>
 
     </div>
@@ -52,72 +73,491 @@ const messages = document.getElementById("messages");
 const input = document.getElementById("message");
 const send = document.getElementById("send");
 
-function addMessage(text,type){
+const pdfFile = document.getElementById("pdfFile");
+const uploadBtn = document.getElementById("uploadBtn");
+const uploadStatus = document.getElementById("uploadStatus");
 
-    const div=document.createElement("div");
+function addMessage(text, type) {
 
-    div.className=`message ${type}`;
+    const div = document.createElement("div");
 
-    div.textContent=text;
+    div.className = `message ${type}`;
+
+    div.textContent = text;
 
     messages.appendChild(div);
 
-    messages.scrollTop=messages.scrollHeight;
+    messages.scrollTop = messages.scrollHeight;
 
 }
 
-async function sendMessage(){
+async function uploadPDF() {
 
-    const text=input.value.trim();
+    if (!pdfFile.files.length) {
 
-    if(!text) return;
+        uploadStatus.textContent = "Please choose a PDF.";
 
-    addMessage(text,"user");
+        return;
 
-    input.value="";
+    }
 
-    try{
+    const formData = new FormData();
 
-        const response=await fetch("/api/chat",{
+    formData.append("file", pdfFile.files[0]);
 
-            method:"POST",
+    uploadStatus.textContent = "Uploading PDF...";
 
-            headers:{
-                "Content-Type":"application/json"
+    try {
+
+        const response = await fetch("/upload", {
+
+            method: "POST",
+
+            body: formData
+
+        });
+
+        const data = await response.json();
+
+        uploadStatus.textContent = data.message;
+
+        addMessage("Document uploaded successfully.", "bot");
+
+    }
+
+    catch {
+
+        uploadStatus.textContent = "Upload failed.";
+
+        addMessage("Unable to upload document.", "bot");
+
+    }
+
+}
+
+async function sendMessage() {
+
+    const text = input.value.trim();
+
+    if (!text)
+        return;
+
+    addMessage(text, "user");
+
+    input.value = "";
+
+    try {
+
+        const response = await fetch("/api/chat", {
+
+            method: "POST",
+
+            headers: {
+
+                "Content-Type": "application/json"
+
             },
 
-            body:JSON.stringify({
+            body: JSON.stringify({
 
-                message:text
+                message: text
 
             })
 
         });
 
-        const data=await response.json();
+        const data = await response.json();
 
-        addMessage(data.reply,"bot");
+        addMessage(data.reply, "bot");
 
     }
 
-    catch{
+    catch {
 
-        addMessage("Unable to contact server.","bot");
+        addMessage(
+            "Unable to contact the server.",
+            "bot"
+        );
 
     }
 
 }
 
-send.onclick=sendMessage;
+uploadBtn.onclick = uploadPDF;
 
-input.addEventListener("keypress",(e)=>{
+send.onclick = sendMessage;
 
-    if(e.key==="Enter")
+input.addEventListener("keypress", (e) => {
+
+    if (e.key === "Enter") {
+
         sendMessage();
+
+    }
 
 });
 
 </script>
 
 </body>
+
+</html> -->
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>ClearLegal AI</title>
+
+    <link rel="stylesheet" href="/static/style.css">
+
+</head>
+
+<body>
+
+<header class="chat-header">
+
+    <div class="header-left">
+
+        <div class="logo-circle">
+            ⚖️
+        </div>
+
+        <div>
+
+            <h2>ClearLegal AI</h2>
+
+            <p>
+                AI-powered Legal Information Assistant
+            </p>
+
+        </div>
+
+    </div>
+
+    <a href="/" class="home-btn">
+        Home
+    </a>
+
+</header>
+
+<main class="chat-page">
+
+    <section class="upload-container">
+
+        <h3>
+            Upload Legal Document
+        </h3>
+
+        <p class="upload-subtitle">
+            Upload a PDF and ask questions about its contents.
+        </p>
+
+        <div class="upload-card">
+
+            <label
+                for="pdfFile"
+                class="choose-file-btn">
+
+                📄 Choose PDF
+
+            </label>
+
+            <input
+                id="pdfFile"
+                type="file"
+                accept=".pdf"
+                hidden
+            >
+
+            <span id="fileName">
+                No file selected
+            </span>
+
+            <button
+                id="uploadBtn"
+                type="button">
+
+                Upload PDF
+
+            </button>
+
+        </div>
+
+        <p id="uploadStatus"></p>
+
+    </section>
+
+    <section
+        id="messages"
+        class="messages">
+
+        <div class="message bot">
+
+            <strong>
+                Welcome to ClearLegal AI
+            </strong>
+
+            <br><br>
+
+            I can answer general legal questions
+            and also answer questions based on
+            your uploaded legal PDF.
+
+            <br><br>
+
+            <b>Examples</b>
+
+            <ul>
+
+                <li>
+                    Summarise this agreement.
+                </li>
+
+                <li>
+                    What are the payment terms?
+                </li>
+
+                <li>
+                    Explain this clause.
+                </li>
+
+                <li>
+                    What happens if either party breaches the contract?
+                </li>
+
+            </ul>
+
+        </div>
+
+    </section>
+
+</main>
+
+<footer class="chat-input">
+
+    <input
+        id="message"
+        type="text"
+        autocomplete="off"
+        placeholder="Ask a legal question..."
+    >
+
+    <button
+        id="send"
+        type="button">
+
+        Send
+
+    </button>
+
+</footer>
+
+<script>
+
+const messages = document.getElementById("messages");
+
+const input = document.getElementById("message");
+
+const send = document.getElementById("send");
+
+const pdfFile = document.getElementById("pdfFile");
+
+const uploadBtn = document.getElementById("uploadBtn");
+
+const uploadStatus = document.getElementById("uploadStatus");
+
+const fileName = document.getElementById("fileName");
+
+pdfFile.addEventListener("change", () => {
+
+    if (pdfFile.files.length) {
+
+        fileName.textContent = pdfFile.files[0].name;
+
+    }
+
+    else {
+
+        fileName.textContent = "No file selected";
+
+    }
+
+});
+
+function addMessage(text, type) {
+
+    const div = document.createElement("div");
+
+    div.className = "message " + type;
+
+    div.textContent = text;
+
+    messages.appendChild(div);
+
+    messages.scrollTop = messages.scrollHeight;
+
+}
+
+function showTyping() {
+
+    const div = document.createElement("div");
+
+    div.className = "message bot";
+
+    div.id = "typing";
+
+    div.textContent = "Thinking...";
+
+    messages.appendChild(div);
+
+    messages.scrollTop = messages.scrollHeight;
+
+}
+
+function removeTyping() {
+
+    const typing = document.getElementById("typing");
+
+    if (typing) {
+
+        typing.remove();
+
+    }
+
+}
+async function uploadPDF() {
+
+    if (!pdfFile.files.length) {
+
+        uploadStatus.textContent = "Please choose a PDF first.";
+
+        return;
+
+    }
+
+    const formData = new FormData();
+
+    formData.append("file", pdfFile.files[0]);
+
+    uploadBtn.disabled = true;
+
+    uploadStatus.textContent = "Uploading document...";
+
+    try {
+
+        const response = await fetch("/upload", {
+
+            method: "POST",
+
+            body: formData
+
+        });
+
+        const data = await response.json();
+
+        uploadStatus.textContent = data.message;
+
+        addMessage(
+            "✅ Your document has been uploaded successfully.",
+            "bot"
+        );
+
+    }
+
+    catch (error) {
+
+        uploadStatus.textContent = "Upload failed.";
+
+        addMessage(
+            "❌ Failed to upload the document.",
+            "bot"
+        );
+
+    }
+
+    uploadBtn.disabled = false;
+
+}
+
+async function sendMessage() {
+
+    const text = input.value.trim();
+
+    if (!text)
+        return;
+
+    addMessage(text, "user");
+
+    input.value = "";
+
+    showTyping();
+
+    try {
+
+        const response = await fetch("/api/chat", {
+
+            method: "POST",
+
+            headers: {
+
+                "Content-Type": "application/json"
+
+            },
+
+            body: JSON.stringify({
+
+                message: text
+
+            })
+
+        });
+
+        const data = await response.json();
+
+        removeTyping();
+
+        addMessage(data.reply, "bot");
+
+    }
+
+    catch (error) {
+
+        removeTyping();
+
+        addMessage(
+            "Unable to contact the server.",
+            "bot"
+        );
+
+    }
+
+}
+
+uploadBtn.addEventListener("click", uploadPDF);
+
+send.addEventListener("click", sendMessage);
+
+input.addEventListener("keydown", function(e) {
+
+    if (e.key === "Enter") {
+
+        e.preventDefault();
+
+        sendMessage();
+
+    }
+
+});
+
+</script>
+
+</body>
+
 </html>
